@@ -15,10 +15,11 @@
 using namespace std;
 int main(int argc, const char * argv[])  
 {  
-    Ssh2 ssh("127.0.0.1");  
+    Ssh2 ssh("127.0.0.1");
+    ssh.Init(0);
     ssh.Connect("guyc","123456");
     Channel* channel = ssh.CreateChannel();
-    //cout<<channel->Read()<<endl;
+
     channel->Write("uptime");  
     cout<<channel->Read("$")<<endl;   
     delete channel;  
@@ -60,44 +61,47 @@ int main(int argc, char **argv){
     int ret = -1;
 
     SSH2Conf ssh2Config;
+    ssh2Config.DstPort = 22;
     struct Parameter *pParameter = &gParameter;
     memset(pParameter, 0, sizeof(struct Parameter));
     parse_commandline(pParameter, argc, argv);
     
-    if(!pParameter->ConfigFileName)
+    if(NULL != pParameter->ConfigFileName)
     {
-        return -1;
+        cout<<pParameter->ConfigFileName<<endl;
+        LoadConfig config(pParameter->ConfigFileName);
+        if(!config.Init())
+        {
+            CLog* pLog = CLog::GetInstance();
+            pLog->Log(CLog::INFO, "config.Init() failed!\n");
+            return -1;
+        }
+        config.GetConf(ssh2Config);
     }
-    LoadConfig config(pParameter->ConfigFileName);
-    if(!config.Init())
-    {
-        CLog* pLog = CLog::GetInstance();
-        pLog->Log(CLog::INFO, "config.Init() failed!\n");
-        return -1;
-    }
-    config.GetConf(ssh2Config);
 
 
     if(NULL != pParameter->DstIp)
-    {
-        cout <<"pParameter->DstIp =  "<<pParameter->DstIp<< endl;
         ssh2Config.DstIp = pParameter->DstIp;
-    }
     if(pParameter->DstPort > 0)
         ssh2Config.DstPort = pParameter->DstPort;
     if(NULL != pParameter->UsrName)
         ssh2Config.DstUsrname = pParameter->UsrName;
     if(NULL != pParameter->PassWord)
-        ssh2Config.DstUsrname = pParameter->PassWord;
+        ssh2Config.DstPassword = pParameter->PassWord;
     
-    cout<<pParameter->ConfigFileName<<endl;
-    cout<<ssh2Config.DstIp<<endl;
-    cout<<ssh2Config.DstPort<<endl;
-    cout<<ssh2Config.DstUsrname<<endl;
-    cout<<ssh2Config.DstPassword<<endl;
+    
+    cout<<"Ip: "<<ssh2Config.DstIp<<endl;
+    cout<<"Port: "<<ssh2Config.DstPort<<endl;
+    cout<<"Usrname: "<<ssh2Config.DstUsrname<<endl;
+    cout<<"Password: "<<ssh2Config.DstPassword<<endl;
 
     Ssh2 ssh(ssh2Config.DstIp, ssh2Config.DstPort); 
-
+    if(!ssh.Init(0))
+    {
+        CLog* pLog = CLog::GetInstance();
+        pLog->Log(CLog::INFO, "ssh2.Init() failed :");
+        return -1;
+    }
     if(!ssh.Connect(ssh2Config.DstUsrname, ssh2Config.DstPassword))
     {
         CLog* pLog = CLog::GetInstance();

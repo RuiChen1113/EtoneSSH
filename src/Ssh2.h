@@ -34,7 +34,7 @@ class Ssh2{
 public:
 	Ssh2(const std::string &srvIp, int srvPort=22);
 	~Ssh2(void);
-
+	bool Init(int flags);
 	bool Connect( const std::string &userName, const std::string &userPwd);
 	bool Disconnect(void);
 	Channel* CreateChannel(const std::string &ptyType = "vanilla");	

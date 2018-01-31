@@ -147,7 +147,7 @@ Ssh2::Ssh2(const string &srvIp, int srvPort)
 {
     m_sock = -1;
     m_session = NULL;
-    libssh2_init(0);
+
 }
   
 Ssh2::~Ssh2(void)
@@ -155,7 +155,13 @@ Ssh2::~Ssh2(void)
     Disconnect();
     libssh2_exit();
 }
-  
+
+bool Ssh2::Init(int flags)
+{
+    int rc = libssh2_init(flags);
+    return rc == 0 ? true : false;
+}
+
 bool Ssh2::Connect(const string &userName, const string &userPwd)
 {
     m_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -271,7 +277,7 @@ Channel* Ssh2::CreateChannel(const string &ptyType)
         return NULL;
     }
     Channel *ret = new Channel(channel);
-    cout<<channel->Read()<<endl;
+    cout<<ret->Read()<<endl;
     return ret;
 }  
 
