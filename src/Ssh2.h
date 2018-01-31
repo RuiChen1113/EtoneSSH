@@ -20,7 +20,7 @@ class Channel
 public:
 	Channel(LIBSSH2_CHANNEL *channel);
 	~Channel(void);
-	std::string Read( const std::string &strend = ":~", int timeout = 3000 );
+	std::string Read( const std::string &strend = "", int timeout = 3000 );
 	bool   Write(const std::string &data);
 	
 private:
