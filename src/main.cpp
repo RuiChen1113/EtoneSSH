@@ -43,7 +43,7 @@ struct Parameter gParameter;
 
 void PRINTF_HELP()
 {  
-    printf("usage: EtoneSsh\n");
+    printf("usage: EtoneSsh 1.1\n");
     printf("                -C cmdFileName\n");
     printf("                -c configFileName\n");
     printf("                -h hsotip\n");
@@ -65,7 +65,13 @@ int main(int argc, char **argv){
     struct Parameter *pParameter = &gParameter;
     memset(pParameter, 0, sizeof(struct Parameter));
     parse_commandline(pParameter, argc, argv);
-    
+
+    CLog* pLog = CLog::GetInstance();
+    if(gParameter.DebugLevel > 0)
+        pLog->SetLogLevel(CLog::DEBUG);
+    else
+        pLog->SetLogLevel(CLog::INFO);
+
     if(NULL != pParameter->ConfigFileName)
     {
         cout<<pParameter->ConfigFileName<<endl;
@@ -89,7 +95,13 @@ int main(int argc, char **argv){
     if(NULL != pParameter->PassWord)
         ssh2Config.DstPassword = pParameter->PassWord;
     
-    
+    if(0 == ssh2Config.DstIp.length())
+    {
+        CLog* pLog = CLog::GetInstance();
+        pLog->Log(CLog::INFO, "Ip is null\n");
+        return -1;
+    }
+	
     cout<<"Ip: "<<ssh2Config.DstIp<<endl;
     cout<<"Port: "<<ssh2Config.DstPort<<endl;
     cout<<"Usrname: "<<ssh2Config.DstUsrname<<endl;
@@ -143,12 +155,13 @@ int main(int argc, char **argv){
             pChannel->Write(cmds[i]);
             usleep(1000*10);
             result = pChannel->Read();
-            if(string::npos != result.find("error"))
+			cout<<result<<endl;
+            if(string::npos != result.find("error")
+				||string::npos != result.find("ERROR"))
             {
                 cout<<"exec cmd "<<cmds[i]<<" "<< result <<endl;
                 return -1;
-            }else
-                cout<<result<<endl;
+            }       
         }
     }
     delete pChannel;
@@ -157,28 +170,28 @@ int main(int argc, char **argv){
 
 void split(const string& src, const string& separator, vector<string>& dest)
 {
-	string str = src;
-	string substring;
-	string::size_type start = 0, index;
-	do
-	{
-		index = str.find_first_of(separator,start);
-		if (index != string::npos)
-		{    
-			substring = str.substr(start,index-start);
-			dest.push_back(substring);
-			start = str.find_first_not_of(separator,index);
-			if (start == string::npos) return;
-		}
-		else
-		{
-			//printf("not find %s\r\n",str.c_str());
-		}
-	}while(index != string::npos);
+    string str = src;
+    string substring;
+    string::size_type start = 0, index;
+    do
+    {
+        index = str.find_first_of(separator,start);
+        if (index != string::npos)
+        {    
+            substring = str.substr(start,index-start);
+            dest.push_back(substring);
+            start = str.find_first_not_of(separator,index);
+            if (start == string::npos) return;
+        }
+        else
+        {
+            //printf("not find %s\r\n",str.c_str());
+        }
+    }while(index != string::npos);
 
-	//the last token
-	substring = str.substr(start);
-	dest.push_back(substring);
+    //the last token
+    substring = str.substr(start);
+    dest.push_back(substring);
 }
 
 #endif
