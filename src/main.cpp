@@ -155,7 +155,7 @@ int main(int argc, char **argv){
             pChannel->Write(cmds[i]);
             usleep(1000*10);
             result = pChannel->Read();
-			cout<<result<<endl;
+			cout<<result<<flush;
             if(string::npos != result.find("error")
 				||string::npos != result.find("ERROR"))
             {

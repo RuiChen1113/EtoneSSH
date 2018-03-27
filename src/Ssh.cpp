@@ -277,7 +277,7 @@ Channel* Ssh2::CreateChannel(const string &ptyType)
         return NULL;
     }
     Channel *ret = new Channel(channel);
-    cout<<ret->Read()<<endl;
+    cout<<ret->Read()<<flush;
     return ret;
 }  
 
